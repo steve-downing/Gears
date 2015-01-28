@@ -95,6 +95,8 @@ public class HashedLinkedDeque<T> extends AbstractCollection<T> implements Deque
         }
         
         public int size() { return size; }
+        public Node first() { return front.next.node; }
+        public Node last() { return back.prev.node; }
     }
     
     public HashedLinkedDeque() {
@@ -115,10 +117,12 @@ public class HashedLinkedDeque<T> extends AbstractCollection<T> implements Deque
         Node next = node.next;
         prev.next = next;
         next.prev = prev;
-        nodeMap.get(node.val).remove(node);
+        EquivalenceList eqList = nodeMap.get(node.val);
+        eqList.remove(node);
+        if (eqList.size() == 0) {
+            nodeMap.remove(node.val);
+        }
     }
-    
-    // TODO: Override a ton of the default method impls.
 
     public boolean removeIf(Predicate<? super T> filter) {
         boolean elementsRemoved = false;
@@ -281,14 +285,26 @@ public class HashedLinkedDeque<T> extends AbstractCollection<T> implements Deque
 
     @Override
     public boolean removeFirstOccurrence(Object o) {
-        // TODO Auto-generated method stub
-        return false;
+        EquivalenceList eqList = nodeMap.get(o);
+        if (eqList != null) {
+            Node node = eqList.first();
+            removeNode(node);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public boolean removeLastOccurrence(Object o) {
-        // TODO Auto-generated method stub
-        return false;
+        EquivalenceList eqList = nodeMap.get(o);
+        if (eqList != null) {
+            Node node = eqList.last();
+            removeNode(node);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
