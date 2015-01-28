@@ -308,46 +308,25 @@ public class HashedLinkedDeque<T> extends AbstractCollection<T> implements Deque
     }
 
     @Override
-    public boolean offer(T e) {
-        // TODO Auto-generated method stub
-        return false;
-    }
+    public boolean offer(T e) { return offerLast(e); }
 
     @Override
-    public T remove() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    public T remove() { return removeFirst(); }
 
     @Override
-    public T poll() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    public T poll() { return pollFirst(); }
 
     @Override
-    public T element() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    public T element() { return getFirst(); }
 
     @Override
-    public T peek() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    public T peek() { return peekFirst(); }
 
     @Override
-    public void push(T e) {
-        // TODO Auto-generated method stub
-        
-    }
+    public void push(T e) { addFirst(e); }
 
     @Override
-    public T pop() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    public T pop() { return removeFirst(); }
 
     @Override
     public Iterator<T> descendingIterator() {
