@@ -57,15 +57,6 @@ public class HashedLinkedDeque<T> extends AbstractCollection<T> implements Deque
             ++size;
         }
         
-        public Node unshift() {
-            EquivalenceNode node = front.next;
-            EquivalenceNode next = node.next;
-            front.next = next;
-            next.prev = front;
-            --size;
-            return node.node;
-        }
-        
         public void push(Node node) {
             EquivalenceNode simpleNode = new EquivalenceNode(node);
             simpleNode.next = back;
@@ -73,15 +64,6 @@ public class HashedLinkedDeque<T> extends AbstractCollection<T> implements Deque
             back.prev = simpleNode;
             simpleNode.prev.next = simpleNode;
             ++size;
-        }
-        
-        public Node pop() {
-            EquivalenceNode node = back.prev;
-            EquivalenceNode prev = node.prev;
-            back.prev = prev;
-            prev.next = back;
-            --size;
-            return node.node;
         }
         
         public Node remove(Node node) {
@@ -142,40 +124,43 @@ public class HashedLinkedDeque<T> extends AbstractCollection<T> implements Deque
     
     private class HashedLinkedIterator implements Iterator<T> {
         private Node node;
-        private int index;
+        private final boolean reversed;
         
         public HashedLinkedIterator() {
-            node = front;
-            index = -1;
+            this(false);
+        }
+        
+        public HashedLinkedIterator(boolean reversed) {
+            if (reversed) {
+                this.node = back;
+            } else {
+                this.node = front;
+            }
+            this.reversed = reversed;
         }
 
-        public boolean hasNext() { return node.next != back; }
+        public boolean hasNext() {
+            if (reversed) return hasPrevious();
+            return node.next != back;
+        }
 
         public T next() {
-            T val = node.val;
+            if (reversed) return previous();
             node = node.next;
-            ++index;
-            return val;
+            return node.val;
         }
 
-        public boolean hasPrevious() {
-            return node != front && node != front.next;
+        private boolean hasPrevious() {
+            return node.prev != front;
         }
 
-        public T previous() {
+        private T previous() {
             node = node.prev;
             return node.val;
         }
 
-        public int nextIndex() { return index + 1; }
-        public int previousIndex() { return index - 1; }
-
         public void remove() {
             removeNode(node);
-        }
-
-        public void set(T e) {
-            node.val = e;
         }
     }
 
@@ -329,11 +314,8 @@ public class HashedLinkedDeque<T> extends AbstractCollection<T> implements Deque
     public T pop() { return removeFirst(); }
 
     @Override
-    public Iterator<T> descendingIterator() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    public Iterator<T> iterator() { return new HashedLinkedIterator(); }
 
     @Override
-    public Iterator<T> iterator() { return new HashedLinkedIterator(); }
+    public Iterator<T> descendingIterator() { return new HashedLinkedIterator(true); }
 }
