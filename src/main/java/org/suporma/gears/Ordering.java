@@ -5,6 +5,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
  * This class is intended to track an ordering of objects. The expectation is that each object will
@@ -23,14 +24,14 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
     }
     
     private final Map<T, Node> nodeMap;
-    private final Node first, last;
+    private final Node front, back;
     
     public Ordering() {
         this.nodeMap = new HashMap<>();
-        this.first = new Node(null);
-        this.last = new Node(null);
-        first.next = last;
-        last.prev = first;
+        this.front = new Node(null);
+        this.back = new Node(null);
+        front.next = back;
+        back.prev = front;
     }
     
     private void put(T val, Node precedent) {
@@ -77,74 +78,82 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
 
     @Override
     public void addFirst(T e) {
-        // TODO Auto-generated method stub
-        
+        put(e, front);
     }
 
     @Override
     public void addLast(T e) {
-        // TODO Auto-generated method stub
-        
+        put(e, back.prev);
     }
 
     @Override
     public boolean offerFirst(T e) {
-        // TODO Auto-generated method stub
-        return false;
+        addFirst(e);
+        return true;
     }
 
     @Override
     public boolean offerLast(T e) {
-        // TODO Auto-generated method stub
-        return false;
+        addLast(e);
+        return true;
+    }
+    
+    private T removeNode(Node node) {
+        Node prev = node.prev;
+        Node next = node.next;
+        prev.next = next;
+        next.prev = prev;
+        T val = node.val;
+        nodeMap.remove(val);
+        return val;
     }
 
     @Override
     public T removeFirst() {
-        // TODO Auto-generated method stub
-        return null;
+        if (isEmpty()) throw new NoSuchElementException();
+        return removeNode(front.next);
     }
 
     @Override
     public T removeLast() {
-        // TODO Auto-generated method stub
-        return null;
+        if (isEmpty()) throw new NoSuchElementException();
+        return removeNode(back.prev);
     }
 
     @Override
     public T pollFirst() {
-        // TODO Auto-generated method stub
-        return null;
+        if (isEmpty()) return null;
+        return removeNode(front.next);
     }
 
     @Override
     public T pollLast() {
-        // TODO Auto-generated method stub
-        return null;
+        if (isEmpty()) return null;
+        return removeNode(back.prev);
     }
 
     @Override
     public T getFirst() {
-        // TODO Auto-generated method stub
-        return null;
+        if (isEmpty()) throw new NoSuchElementException();
+        return front.next.val;
     }
 
     @Override
     public T getLast() {
-        // TODO Auto-generated method stub
-        return null;
+        if (isEmpty()) throw new NoSuchElementException();
+        return back.prev.val;
     }
 
     @Override
     public T peekFirst() {
-        // TODO Auto-generated method stub
-        return null;
+        if (isEmpty()) return null;
+        return front.next.val;
     }
 
     @Override
     public T peekLast() {
-        // TODO Auto-generated method stub
-        return null;
+        if (isEmpty()) return null;
+        return back.prev.val;
     }
 
     @Override
