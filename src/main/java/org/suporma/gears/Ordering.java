@@ -36,12 +36,10 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
     
     private void put(T val, Node precedent) {
         Node node = nodeMap.get(val);
-        boolean isNewNode = false;
-        if (node == null) {
-            isNewNode = true;
+        boolean isNewNode = node == null;
+        if (isNewNode) {
             node = new Node(val);
-        }
-        if (node.prev != null) {
+        } else {
             Node prev = node.prev;
             Node next = node.next;
             prev.next = next;
@@ -158,14 +156,12 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
 
     @Override
     public boolean removeFirstOccurrence(Object o) {
-        // TODO Auto-generated method stub
-        return false;
+        return remove(o);
     }
 
     @Override
     public boolean removeLastOccurrence(Object o) {
-        // TODO Auto-generated method stub
-        return false;
+        return remove(o);
     }
 
     @Override
