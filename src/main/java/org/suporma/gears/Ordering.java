@@ -1,6 +1,7 @@
 package org.suporma.gears;
 
 import java.util.AbstractCollection;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,6 +39,37 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
         back.prev = front;
     }
     
+    public Ordering(Collection<T> objects) {
+        this();
+        addAll(objects);
+    }
+    
+    public int hashCode() {
+        int hashCode = 1;
+        for (T e : this)
+            hashCode = 31 * hashCode + (e == null ? 0 : e.hashCode());
+        return hashCode;
+    }
+    
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Ordering<?> other = (Ordering<?>) obj;
+        Iterator<T> e1 = iterator();
+        Iterator<?> e2 = other.iterator();
+        while (e1.hasNext() && e2.hasNext()) {
+            T o1 = e1.next();
+            Object o2 = e2.next();
+            if (!(o1 == null ? o2 == null : o1.equals(o2)))
+                return false;
+        }
+        return !(e1.hasNext() || e2.hasNext());
+    }
+
     private void put(T val, Node precedent) {
         Node node = nodeMap.get(val);
         boolean isNewNode = node == null;
@@ -266,7 +298,7 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
 
         @Override
         public boolean hasNext() {
-            return node != null && node != back && node != back.prev;
+            return node != back.prev && node != null && node != back;
         }
 
         @Override
@@ -293,7 +325,7 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
 
         @Override
         public boolean hasNext() {
-            return node != null && node != front && node != front.next;
+            return node != front.next && node != null && node != front;
         }
 
         @Override
