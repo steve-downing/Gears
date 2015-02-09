@@ -25,11 +25,13 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
     
     private final Map<T, Node> nodeMap;
     private final Node front, back;
+    private int size;
     
     public Ordering() {
         this.nodeMap = new HashMap<>();
         this.front = new Node(null);
         this.back = new Node(null);
+        this.size = 0;
         front.next = back;
         back.prev = front;
     }
@@ -40,6 +42,7 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
         if (isNewNode) {
             node = new Node(val);
         } else {
+            if (node == precedent) return;
             Node prev = node.prev;
             Node next = node.next;
             prev.next = next;
@@ -52,6 +55,7 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
         next.prev = node;
         if (isNewNode) {
             nodeMap.put(val, node);
+            ++size;
         }
     }
     
@@ -69,9 +73,50 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
         return true;
     }
     
+    public boolean rotate(T newFirstVal) {
+        Node newFirst = nodeMap.get(newFirstVal);
+        if (newFirst == null) return false;
+        if (newFirst.prev == front) return false;
+        Node oldFirst = front.next;
+        Node oldLast = back.prev;
+        Node newLast = newFirst.prev;
+        front.next = newFirst;
+        back.prev = newLast;
+        oldFirst.prev = oldLast;
+        oldLast.next = oldFirst;
+        return true;
+    }
+    
     public boolean swap(T val1, T val2) {
-        // TODO
-        return false;
+        Node node1 = nodeMap.get(val1);
+        Node node2 = nodeMap.get(val2);
+        if (node1 == null || node2 == null || node1 == node2) return false;
+        Node prev1 = node1.prev;
+        Node prev2 = node2.prev;
+        if (node2 == prev1) {
+            // We need to do special stuff if the nodes are adjacent. If node2 is node1's prev,
+            // we'll swap them and handle it in the next if-statement.
+            Node temp = node1;
+            node1 = node2;
+            node2 = temp;
+            temp = prev1;
+            prev1 = prev2;
+            prev2 = temp;
+        }
+        if (node1 == prev2) {
+            // If the two nodes are adjacent, we need to be a little careful.
+            Node next = node2.next;
+            node1.prev = node2;
+            node1.next = next;
+            node2.prev = prev1;
+            node2.next = node1;
+            prev1.next = node2;
+            next.prev = node1;
+        } else {
+            put(val1, prev2);
+            put(val2, prev1);
+        }
+        return true;
     }
 
     @Override
@@ -103,6 +148,7 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
         next.prev = prev;
         T val = node.val;
         nodeMap.remove(val);
+        --size;
         return val;
     }
 
@@ -165,52 +211,28 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
     }
 
     @Override
-    public boolean offer(T e) {
-        // TODO Auto-generated method stub
-        return false;
-    }
+    public boolean offer(T e) { return offerLast(e); }
 
     @Override
-    public T remove() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    public T remove() { return removeFirst(); }
 
     @Override
-    public T poll() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    public T poll() { return pollFirst(); }
 
     @Override
-    public T element() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    public T element() { return getFirst(); }
 
     @Override
-    public T peek() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    public T peek() { return peekFirst(); }
 
     @Override
-    public void push(T e) {
-        // TODO Auto-generated method stub
-        
-    }
+    public void push(T e) { addFirst(e); }
 
     @Override
-    public T pop() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    public T pop() { return removeFirst(); }
 
     @Override
-    public boolean remove(Object o) {
-        // TODO Auto-generated method stub
-        return false;
-    }
+    public boolean remove(Object o) { return removeFirstOccurrence(o); }
 
     @Override
     public Iterator<T> descendingIterator() {
@@ -225,8 +247,5 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
     }
 
     @Override
-    public int size() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+    public int size() { return size; }
 }
