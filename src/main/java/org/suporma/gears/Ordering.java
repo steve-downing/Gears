@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
- * This class is intended to track an ordering of objects. The expectation is that each object will
- * appear no more than once.
+ * This class is intended to track an ordering of objects. An object cannot appear in the ordering
+ * more than once. Most operations run in constant time.
  */
 public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
     private class Node {
@@ -233,18 +233,50 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
 
     @Override
     public boolean remove(Object o) { return removeFirstOccurrence(o); }
+    
+    private class OrderingIterator implements Iterator<T> {
+        private Node node;
 
-    @Override
-    public Iterator<T> descendingIterator() {
-        // TODO Auto-generated method stub
-        return null;
+        public OrderingIterator() {
+            this.node = front;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return node != null && node != back && node != back.prev;
+        }
+
+        @Override
+        public T next() {
+            node = node.next;
+            return node.val;
+        }
     }
 
     @Override
-    public Iterator<T> iterator() {
-        // TODO Auto-generated method stub
-        return null;
+    public Iterator<T> iterator() { return new OrderingIterator(); }
+
+    private class OrderingDescendingIterator implements Iterator<T> {
+        private Node node;
+
+        public OrderingDescendingIterator() {
+            this.node = back;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return node != null && node != front && node != front.next;
+        }
+
+        @Override
+        public T next() {
+            node = node.prev;
+            return node.val;
+        }
     }
+
+    @Override
+    public Iterator<T> descendingIterator() { return new OrderingDescendingIterator(); }
 
     @Override
     public int size() { return size; }
