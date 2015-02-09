@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
- * This class is intended to track an ordering of objects. An object cannot appear in the ordering
- * more than once. Most operations run in constant time.
+ * This class is intended to track an ordering of distinct objects. An object cannot appear in the
+ * ordering more than once. Most operations run in constant time.
  */
 public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
     private class Node {
@@ -117,6 +117,16 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
             put(val2, prev1);
         }
         return true;
+    }
+
+    @Override
+    public boolean add(T e) {
+        if (nodeMap.containsKey(e)) {
+            return false;
+        } else {
+            addLast(e);
+            return true;
+        }
     }
 
     @Override
@@ -232,7 +242,15 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
     public T pop() { return removeFirst(); }
 
     @Override
-    public boolean remove(Object o) { return removeFirstOccurrence(o); }
+    public boolean remove(Object o) {
+        Node node = nodeMap.get(o);
+        if (node == null) {
+            return false;
+        } else {
+            removeNode(node);
+            return true;
+        }
+    }
     
     private class OrderingIterator implements Iterator<T> {
         private Node node;
@@ -280,4 +298,17 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
 
     @Override
     public int size() { return size; }
+
+    @Override
+    public boolean contains(Object o) {
+        return nodeMap.containsKey(o);
+    }
+    
+    @Override
+    public void clear() {
+        nodeMap.clear();
+        front.next = back;
+        back.prev = front;
+        size = 0;
+    }
 }
