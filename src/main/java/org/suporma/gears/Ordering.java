@@ -15,11 +15,13 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
     private class Node {
         final T val;
         Node prev, next;
+        boolean alive;
         
         public Node(T val) {
             this.val = val;
             this.prev = null;
             this.next = null;
+            this.alive = true;
         }
     }
     
@@ -152,13 +154,16 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
     }
     
     private T removeNode(Node node) {
-        Node prev = node.prev;
-        Node next = node.next;
-        prev.next = next;
-        next.prev = prev;
         T val = node.val;
-        nodeMap.remove(val);
-        --size;
+        if (node.alive) {
+            node.alive = false;
+            Node prev = node.prev;
+            Node next = node.next;
+            prev.next = next;
+            next.prev = prev;
+            nodeMap.remove(val);
+            --size;
+        }
         return val;
     }
 
@@ -269,6 +274,11 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
             node = node.next;
             return node.val;
         }
+        
+        @Override
+        public void remove() {
+            removeNode(node);
+        }
     }
 
     @Override
@@ -290,6 +300,11 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
         public T next() {
             node = node.prev;
             return node.val;
+        }
+        
+        @Override
+        public void remove() {
+            removeNode(node);
         }
     }
 
