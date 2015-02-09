@@ -12,7 +12,7 @@ public class HashedLinkedDeque<T> extends AbstractCollection<T> implements Deque
     private final Map<T, EquivalenceList> nodeMap;
     private Node front, back;
     private int size = 0;
-
+    
     private class Node {
         private Node prev, next;
         private EquivalenceNode equivalenceNode;
@@ -88,6 +88,13 @@ public class HashedLinkedDeque<T> extends AbstractCollection<T> implements Deque
         front.next = back;
         back.prev = front;
         size = 0;
+    }
+    
+    public HashedLinkedDeque(Iterable<T> vals) {
+        this();
+        for (T val : vals) {
+            add(val);
+        }
     }
     
     public int count(T val) {
