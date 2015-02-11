@@ -107,6 +107,16 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
         return true;
     }
     
+    public T getNext(T val) {
+        Node node = nodeMap.get(val);
+        if (node == null) throw new NoSuchElementException();
+        Node nextNode = node.next;
+        if (nextNode == back) {
+            nextNode = front.next;
+        }
+        return nextNode.val;
+    }
+    
     public boolean rotate(T newFirstVal) {
         Node newFirst = nodeMap.get(newFirstVal);
         if (newFirst == null) return false;
