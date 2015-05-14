@@ -3,7 +3,7 @@
   <groupId>org.suporma.gears</groupId>
   <artifactId>gears</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>org.suporma.gears</name>
+  <name>gears</name>
 
   <dependencies>
     <dependency>
