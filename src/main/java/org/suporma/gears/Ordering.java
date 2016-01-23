@@ -1,6 +1,7 @@
 package org.suporma.gears;
 
 import java.util.AbstractCollection;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -8,18 +9,20 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
- * This class is intended to track an ordering of objects. An object cannot appear in the ordering
- * more than once. Most operations run in constant time.
+ * This class is intended to track an ordering of distinct objects. An object cannot appear in the
+ * ordering more than once. Most operations run in constant time.
  */
 public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
     private class Node {
         final T val;
         Node prev, next;
+        boolean alive;
         
         public Node(T val) {
             this.val = val;
             this.prev = null;
             this.next = null;
+            this.alive = true;
         }
     }
     
@@ -36,6 +39,37 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
         back.prev = front;
     }
     
+    public Ordering(Collection<T> objects) {
+        this();
+        addAll(objects);
+    }
+    
+    public int hashCode() {
+        int hashCode = 1;
+        for (T e : this)
+            hashCode = 31 * hashCode + (e == null ? 0 : e.hashCode());
+        return hashCode;
+    }
+    
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Ordering<?> other = (Ordering<?>) obj;
+        Iterator<T> e1 = iterator();
+        Iterator<?> e2 = other.iterator();
+        while (e1.hasNext() && e2.hasNext()) {
+            T o1 = e1.next();
+            Object o2 = e2.next();
+            if (!(o1 == null ? o2 == null : o1.equals(o2)))
+                return false;
+        }
+        return !(e1.hasNext() || e2.hasNext());
+    }
+
     private void put(T val, Node precedent) {
         Node node = nodeMap.get(val);
         boolean isNewNode = node == null;
@@ -71,6 +105,16 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
         if (followerNode == null) return false;
         put(val, followerNode.prev);
         return true;
+    }
+    
+    public T getNext(T val) {
+        Node node = nodeMap.get(val);
+        if (node == null) throw new NoSuchElementException();
+        Node nextNode = node.next;
+        if (nextNode == back) {
+            nextNode = front.next;
+        }
+        return nextNode.val;
     }
     
     public boolean rotate(T newFirstVal) {
@@ -120,6 +164,16 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
     }
 
     @Override
+    public boolean add(T e) {
+        if (nodeMap.containsKey(e)) {
+            return false;
+        } else {
+            addLast(e);
+            return true;
+        }
+    }
+
+    @Override
     public void addFirst(T e) {
         put(e, front);
     }
@@ -142,13 +196,16 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
     }
     
     private T removeNode(Node node) {
-        Node prev = node.prev;
-        Node next = node.next;
-        prev.next = next;
-        next.prev = prev;
         T val = node.val;
-        nodeMap.remove(val);
-        --size;
+        if (node.alive) {
+            node.alive = false;
+            Node prev = node.prev;
+            Node next = node.next;
+            prev.next = next;
+            next.prev = prev;
+            nodeMap.remove(val);
+            --size;
+        }
         return val;
     }
 
@@ -232,7 +289,15 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
     public T pop() { return removeFirst(); }
 
     @Override
-    public boolean remove(Object o) { return removeFirstOccurrence(o); }
+    public boolean remove(Object o) {
+        Node node = nodeMap.get(o);
+        if (node == null) {
+            return false;
+        } else {
+            removeNode(node);
+            return true;
+        }
+    }
     
     private class OrderingIterator implements Iterator<T> {
         private Node node;
@@ -243,13 +308,18 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
 
         @Override
         public boolean hasNext() {
-            return node != null && node != back && node != back.prev;
+            return node != back.prev && node != null && node != back;
         }
 
         @Override
         public T next() {
             node = node.next;
             return node.val;
+        }
+        
+        @Override
+        public void remove() {
+            removeNode(node);
         }
     }
 
@@ -265,13 +335,18 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
 
         @Override
         public boolean hasNext() {
-            return node != null && node != front && node != front.next;
+            return node != front.next && node != null && node != front;
         }
 
         @Override
         public T next() {
             node = node.prev;
             return node.val;
+        }
+        
+        @Override
+        public void remove() {
+            removeNode(node);
         }
     }
 
@@ -280,4 +355,17 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
 
     @Override
     public int size() { return size; }
+
+    @Override
+    public boolean contains(Object o) {
+        return nodeMap.containsKey(o);
+    }
+    
+    @Override
+    public void clear() {
+        nodeMap.clear();
+        front.next = back;
+        back.prev = front;
+        size = 0;
+    }
 }
