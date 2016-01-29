@@ -39,6 +39,12 @@ public class Ordering<T> extends AbstractCollection<T> implements Deque<T> {
         back.prev = front;
     }
     
+    @SafeVarargs
+    public Ordering(T... objects) {
+        this();
+        for (T o : objects) add(o);
+    }
+    
     public Ordering(Collection<T> objects) {
         this();
         addAll(objects);
