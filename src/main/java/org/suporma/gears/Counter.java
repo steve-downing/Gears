@@ -11,7 +11,11 @@ public class Counter<T> {
     }
     
     public int add(T val) {
-        return counts.merge(val, 1, (key, oldCount) -> oldCount + 1);
+        return add(val, 1);
+    }
+    
+    public int add(T val, int n) {
+        return counts.merge(val, n, (key, oldCount) -> oldCount + n);
     }
     
     public int remove(T val) {
